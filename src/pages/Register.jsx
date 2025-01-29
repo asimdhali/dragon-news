@@ -1,26 +1,64 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../provider/AuthProvider";
+import { use } from "react";
 
 const Register = () => {
+  const { createNewUser, setUser } = useContext(AuthContext);
+  const [error, setError] = useState({});
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // get form data
+    const form = new FormData(e.target);
+    const name = form.get("name");
+    if (name.length < 5) {
+      setError({ ...error, name: "must be more than 5 characters" });
+      return;
+    }
+    const email = form.get("email");
+    const photo = form.get("photo");
+    const password = form.get("password");
+    // console.log({name, email, photo, password});
+
+    createNewUser(email, password)
+      .then((result) => {
+        const user = result.user;
+        setUser(user);
+        console.log(user);
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(errorCode, errorMessage);
+      });
+  };
   return (
     <div className="min-h-screen flex justify-center items-center">
       <div className="card bg-base-100 w-full max-w-lg shrink-0 rounded-none p-10">
         <h2 className="text-2xl font-semibold text-center">
           Register your account
         </h2>
-        <form className="card-body">
+        <form onSubmit={handleSubmit} className="card-body">
           {/* name input */}
           <div className="form-control">
             <label className="label">
               <span className="label-text">Name</span>
             </label>
             <input
+              name="name"
               type="text"
               placeholder="name"
               className="input input-bordered"
               required
             />
           </div>
+
+          {error.name && (
+            <label className="label text-xs text-rose-500">
+              {error.name}
+            </label>
+          )}
           {/* Photo url */}
           <div className="form-control">
             <label className="label">
@@ -28,6 +66,7 @@ const Register = () => {
             </label>
             <input
               type="text"
+              name="photo"
               placeholder="photo url"
               className="input input-bordered"
               required
@@ -39,6 +78,7 @@ const Register = () => {
               <span className="label-text">Email</span>
             </label>
             <input
+              name="email"
               type="email"
               placeholder="email"
               className="input input-bordered"
@@ -51,6 +91,7 @@ const Register = () => {
               <span className="label-text">Password</span>
             </label>
             <input
+              name="password"
               type="password"
               placeholder="password"
               className="input input-bordered"
